@@ -45,8 +45,10 @@ public class PanasonicScanner extends CordovaPlugin  implements BarcodeListener,
         @Override
         protected Boolean doInBackground(BarcodeReader... params) {
             try {
+				Log.e(TAG, "Steven in doBackground 1");
                 params[0].enable(1);
                 params[0].addBarcodeListener(PanasonicScanner.this);
+				Log.e(TAG, "Steven in doBackground 2");
                 return true;
             } catch (BarcodeException ex) {
                 Log.e(TAG, ex.toString());
@@ -77,6 +79,12 @@ public class PanasonicScanner extends CordovaPlugin  implements BarcodeListener,
 		} else if (action.equals("deactivate")) {
             this.deactivateReader(callbackContext);
             return true;
+        } else if (action.equals("startScanning")) {
+            this.startScanning();
+            return true;
+        } else if (action.equals("stopScanning")) {
+            this.stopScanning();
+            return true;
         }
 
         return false;
@@ -84,10 +92,10 @@ public class PanasonicScanner extends CordovaPlugin  implements BarcodeListener,
 
 	private void activateReader(CallbackContext callbackContext){
 		try {
+			Log.e(TAG, "Steven in activateReader 1");
 			List<BarcodeReader> readers = BarcodeReaderManager.getBarcodeReaders();
 			BarcodeReader selectedReader = readers.get(0);
             selectedReader.enable(1);
-            selectedReader.pressSoftwareTrigger(true);
 			selectedReader.addBarcodeListener(this);
 			callbackContextReference = callbackContext;
 		} catch (Exception e) {
@@ -98,12 +106,37 @@ public class PanasonicScanner extends CordovaPlugin  implements BarcodeListener,
 
     private void deactivateReader(CallbackContext callbackContext) {
         try {
+			Log.e(TAG, "Steven in deactivateReader 1");
 			List<BarcodeReader> readers = BarcodeReaderManager.getBarcodeReaders();
 			BarcodeReader selectedReader = readers.get(0);
-            selectedReader.pressSoftwareTrigger(false);
             selectedReader.disable();
             selectedReader.clearBarcodeListener();
 			callbackContextReference = callbackContext;
+		} catch (Exception e) {
+			Log.e(TAG, e.toString());
+		}
+    }
+	
+		private void startScanning(){
+		try {
+			Log.e(TAG, "Steven in startScanning 1");
+			List<BarcodeReader> readers = BarcodeReaderManager.getBarcodeReaders();
+			BarcodeReader selectedReader = readers.get(0);
+            selectedReader.pressSoftwareTrigger(true);
+			Log.e(TAG, "Steven in startScanning 2");
+		} catch (Exception e) {
+			Log.e(TAG, e.toString());
+		}
+
+	}
+
+    private void stopScanning() {
+        try {
+			Log.e(TAG, "Steven in stopScanning 1");
+			List<BarcodeReader> readers = BarcodeReaderManager.getBarcodeReaders();
+			BarcodeReader selectedReader = readers.get(0);
+            selectedReader.pressSoftwareTrigger(false);
+			Log.e(TAG, "Steven in stopScanning 2");
 		} catch (Exception e) {
 			Log.e(TAG, e.toString());
 		}
@@ -112,7 +145,8 @@ public class PanasonicScanner extends CordovaPlugin  implements BarcodeListener,
     @Override
     public void onRead(BarcodeReader paramBarcodeReader, BarcodeData paramBarcodeData)
     {
-          String strBarcodeData =  paramBarcodeData.getTextData();
+		  Log.e(TAG, "Steven in onRead");
+		  String strBarcodeData =  paramBarcodeData.getTextData();
           String strSymbologyId = paramBarcodeData.getSymbology();
           message = strBarcodeData;
           cordova.getActivity().runOnUiThread(new Runnable() {
