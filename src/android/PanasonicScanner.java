@@ -45,10 +45,8 @@ public class PanasonicScanner extends CordovaPlugin  implements BarcodeListener,
         @Override
         protected Boolean doInBackground(BarcodeReader... params) {
             try {
-				Log.e(TAG, "Steven in doBackground 1");
                 params[0].enable(1);
                 params[0].addBarcodeListener(PanasonicScanner.this);
-				Log.e(TAG, "Steven in doBackground 2");
                 return true;
             } catch (BarcodeException ex) {
                 Log.e(TAG, ex.toString());
@@ -73,31 +71,33 @@ public class PanasonicScanner extends CordovaPlugin  implements BarcodeListener,
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("activate")){
+		callbackContextReference = callbackContext;
+		
+		if (action.equals("activate")){
 			this.activateReader(callbackContext);
 			return true;
 		} else if (action.equals("deactivate")) {
             this.deactivateReader(callbackContext);
             return true;
         } else if (action.equals("startScanning")) {
-            this.startScanning();
+            this.startScanning(callbackContext);
             return true;
         } else if (action.equals("stopScanning")) {
-            this.stopScanning();
+            this.stopScanning(callbackContext);
             return true;
         }
 
         return false;
     }
+	
+	private BarcodeReader getBarcodeReader(){
+		List<BarcodeReader> readers = BarcodeReaderManager.getBarcodeReaders();
+		return readers.get(0);
+	}
 
 	private void activateReader(CallbackContext callbackContext){
 		try {
-			Log.e(TAG, "Steven in activateReader 1");
-			List<BarcodeReader> readers = BarcodeReaderManager.getBarcodeReaders();
-			BarcodeReader selectedReader = readers.get(0);
-            selectedReader.enable(1);
-			selectedReader.addBarcodeListener(this);
-			callbackContextReference = callbackContext;
+            this.getBarcodeReader().enable(1);
 		} catch (Exception e) {
 			Log.e(TAG, e.toString());
 		}
@@ -106,37 +106,28 @@ public class PanasonicScanner extends CordovaPlugin  implements BarcodeListener,
 
     private void deactivateReader(CallbackContext callbackContext) {
         try {
-			Log.e(TAG, "Steven in deactivateReader 1");
-			List<BarcodeReader> readers = BarcodeReaderManager.getBarcodeReaders();
-			BarcodeReader selectedReader = readers.get(0);
+			BarcodeReader selectedReader = this.getBarcodeReader();
             selectedReader.disable();
             selectedReader.clearBarcodeListener();
-			callbackContextReference = callbackContext;
 		} catch (Exception e) {
 			Log.e(TAG, e.toString());
 		}
     }
 	
-		private void startScanning(){
+		private void startScanning(CallbackContext callbackContext){
 		try {
-			Log.e(TAG, "Steven in startScanning 1");
-			List<BarcodeReader> readers = BarcodeReaderManager.getBarcodeReaders();
-			BarcodeReader selectedReader = readers.get(0);
+			BarcodeReader selectedReader = this.getBarcodeReader();
             selectedReader.pressSoftwareTrigger(true);
-			Log.e(TAG, "Steven in startScanning 2");
+			selectedReader.addBarcodeListener(this);
 		} catch (Exception e) {
 			Log.e(TAG, e.toString());
 		}
 
 	}
 
-    private void stopScanning() {
+    private void stopScanning(CallbackContext callbackContext) {
         try {
-			Log.e(TAG, "Steven in stopScanning 1");
-			List<BarcodeReader> readers = BarcodeReaderManager.getBarcodeReaders();
-			BarcodeReader selectedReader = readers.get(0);
-            selectedReader.pressSoftwareTrigger(false);
-			Log.e(TAG, "Steven in stopScanning 2");
+            this.getBarcodeReader().pressSoftwareTrigger(false);
 		} catch (Exception e) {
 			Log.e(TAG, e.toString());
 		}
@@ -145,7 +136,6 @@ public class PanasonicScanner extends CordovaPlugin  implements BarcodeListener,
     @Override
     public void onRead(BarcodeReader paramBarcodeReader, BarcodeData paramBarcodeData)
     {
-		  Log.e(TAG, "Steven in onRead");
 		  String strBarcodeData =  paramBarcodeData.getTextData();
           String strSymbologyId = paramBarcodeData.getSymbology();
           message = strBarcodeData;
